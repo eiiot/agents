@@ -25,9 +25,11 @@ the workflow has no GitHub write side effects.
 
 ## Supported deliveries
 
-The agent reviews non-draft PRs on `opened`, `reopened`, `synchronize`, and
-`ready_for_review`. Other repositories, actions, drafts, malformed bodies, and
-stale deliveries end without a notification.
+The repository-owned `tuft.webhook.yaml` admits non-draft `expo/tuft` PRs on
+`opened`, `reopened`, `synchronize`, and `ready_for_review`. Tuft rejects other
+repositories, actions, drafts, and GitHub event types before it starts an agent.
+`AGENTS.md` repeats these checks as defense in depth; malformed bodies and stale
+deliveries do not produce review reports.
 
 Use GitHub's **Redeliver** action on a pull-request delivery to test the setup.
 The agent pins the review to the payload's head SHA and discards its report if

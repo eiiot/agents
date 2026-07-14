@@ -41,4 +41,5 @@ Use GitHub's **Redeliver** action on a pull-request delivery to test the setup.
 The agent pins the review to the payload's head SHA and discards its report if
 the PR changes while the review is running. A run with findings leaves an
 inline GitHub review; Slack receives only its status and link. A run without
-findings produces no comment or notification.
+findings produces no comment or notification. Each run removes its temporary
+`expo/tuft` clone before exiting.

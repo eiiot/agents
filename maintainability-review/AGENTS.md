@@ -25,9 +25,10 @@ without sending a message. Do not attempt to infer missing fields.
 1. Record the immutable review target from the payload: repository
    `expo/tuft`, PR number, head SHA, and `action`. Treat all other fields as
    context only.
-2. Clone `https://github.com/expo/tuft.git` with `gh repo clone expo/tuft` into
-   a temporary directory outside this instructions checkout. Do not modify the
-   `eiiot/agents` checkout.
+2. Create a unique temporary directory with `mktemp -d`, then clone
+   `https://github.com/expo/tuft.git` into it with `gh repo clone expo/tuft`.
+   Record the directory path for cleanup. Do not modify the `eiiot/agents`
+   checkout.
 3. In the clone, verify with `gh pr view <number> --repo expo/tuft --json
    headRefOid,isDraft,state` that the PR is open, non-draft, and its current
    `headRefOid` equals the payload head SHA. If it moved, end quietly; this
@@ -41,14 +42,18 @@ without sending a message. Do not attempt to infer missing fields.
    keep correctness, performance, and style-only review out of scope.
 6. Re-check the PR head SHA after the review. If it changed, discard the report
    and end quietly.
-7. If the skill reports no findings, end the run quietly without posting to
+7. Remove the temporary clone and its parent directory with `rm -rf --
+   <recorded-temp-directory>`. Cleanup is best-effort and must happen before
+   every normal or error exit after the directory is created. Never remove a
+   path that was not created and recorded by this run.
+8. If the skill reports no findings, end the run quietly without posting to
    GitHub or Slack.
-8. Before posting, list existing reviews with `gh api
+9. Before posting, list existing reviews with `gh api
    repos/expo/tuft/pulls/<number>/reviews --paginate`. If a review body already
    contains `<!-- tuft-maintainability-review:<full-head-sha> -->`, do not post
    a duplicate. Send the Slack status described below with the existing
    review's `html_url`.
-9. Assemble the GitHub review request as JSON in a temporary file. The request
+10. Assemble the GitHub review request as JSON in a temporary file. The request
    must have this shape:
 
    ```json
@@ -78,7 +83,7 @@ without sending a message. Do not attempt to infer missing fields.
    line in the same hunk that still supports the finding. Do not invent a line
    anchor or move a finding to unrelated code. Omit a finding that cannot be
    supported by a specific diff line.
-10. Validate the JSON locally with `jq empty`, re-check the PR head SHA one last
+11. Validate the JSON locally with `jq empty`, re-check the PR head SHA one last
    time, then submit it with:
 
    ```sh
@@ -106,5 +111,6 @@ If the head moves, the event is unsupported, or the payload is invalid, do not
 post to GitHub or Slack. On tooling, authentication, clone, skill, JSON
 validation, or GitHub submission failures, do not fall back to putting the
 review in Slack; send one actionable Slack message naming the PR, failed step,
-and error. Never include credentials, webhook URLs, tokens, the review JSON,
-or the full request body.
+and error. Attempt recorded temporary-directory cleanup before reporting any
+failure. Never include credentials, webhook URLs, tokens, the review JSON, or
+the full request body.

@@ -29,9 +29,10 @@ checks that marker before posting.
 
 ## Supported deliveries
 
-The repository-owned `tuft.webhook.yaml` admits non-draft `expo/tuft` PRs on
-`opened`, `reopened`, `synchronize`, and `ready_for_review`. Tuft rejects other
-repositories, actions, drafts, and GitHub event types before it starts an agent.
+The repository-owned `tuft.webhook.yaml` admits the first eligible event for
+each `expo/tuft` PR: `opened` for a non-draft PR, or `ready_for_review` when a
+PR was opened as a draft. Tuft rejects later updates, reopened PRs, other
+repositories, drafts, and GitHub event types before it starts an agent.
 `AGENTS.md` repeats these checks as defense in depth; malformed bodies and stale
 deliveries do not produce review reports.
 

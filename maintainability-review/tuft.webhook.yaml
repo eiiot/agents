@@ -2,5 +2,5 @@ version: 1
 filter: >-
   headers["x-github-event"] == "pull_request" &&
   body.repository.full_name == "expo/tuft" &&
-  body.action in ["opened", "reopened", "synchronize", "ready_for_review"] &&
+  body.action in ["opened", "ready_for_review"] &&
   !body.pull_request.draft

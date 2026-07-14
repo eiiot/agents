@@ -3,7 +3,8 @@
 Runs the `maintainability-and-bloat-review` skill for relevant pull-request
 events from `expo/tuft`, posts one non-blocking GitHub review with findings on
 specific diff lines, and uses the webhook's `send_message` tool for a short
-delivery notification. Clean reviews produce neither a review nor a message.
+delivery notification. Clean reviews still leave a GitHub acknowledgment so
+the PR records that the review ran.
 
 ## Tuft setup
 
@@ -40,5 +41,6 @@ Use GitHub's **Redeliver** action on a pull-request delivery to test the setup.
 The agent pins the review to the payload's head SHA and discards its report if
 the PR changes while the review is running. A run with findings leaves an
 inline GitHub review and calls `send_message` with only its status and link. A
-run without findings produces no review or message. Each run removes its
-temporary `expo/tuft` clone before exiting.
+run without findings leaves a zero-finding GitHub review and the same short
+delivery status. Each run removes its temporary `expo/tuft` clone before
+exiting.

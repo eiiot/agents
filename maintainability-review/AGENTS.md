@@ -13,8 +13,8 @@ of these conditions hold:
 - `repository.full_name` is exactly `expo/tuft`.
 - The event is a GitHub `pull_request` payload, identified by the presence of
   `pull_request` and `number`.
-- `action` is one of `opened`, `reopened`, `synchronize`, or
-  `ready_for_review`.
+- `action` is either `opened` or `ready_for_review`. The latter is the first
+  eligible event for a pull request that was opened as a draft.
 - `pull_request.draft` is false.
 
 For malformed, truncated, unrelated, unsupported, or draft events, end the run
@@ -30,8 +30,8 @@ without sending a message. Do not attempt to infer missing fields.
    `eiiot/agents` checkout.
 3. In the clone, verify with `gh pr view <number> --repo expo/tuft --json
    headRefOid,isDraft,state` that the PR is open, non-draft, and its current
-   `headRefOid` equals the payload head SHA. If it moved, end quietly; a newer
-   `synchronize` event will review the new head.
+   `headRefOid` equals the payload head SHA. If it moved, end quietly; this
+   workflow reviews only the first eligible PR event.
 4. Read the target repository's `AGENTS.md`, `CLAUDE.md`, contributing docs,
    and design-document conventions before reviewing.
 5. Explicitly invoke the installed `maintainability-and-bloat-review` skill

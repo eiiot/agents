@@ -46,7 +46,9 @@ without sending a message. Do not attempt to infer missing fields.
    contains `<!-- tuft-maintainability-review:<full-head-sha> -->`, do not post
    a duplicate. Send the Slack status described below with the existing
    review's `html_url`.
-8. Assemble the GitHub review request as JSON in a temporary file. The request
+8. If the skill reports no findings, end the run quietly without posting to
+   GitHub or Slack.
+9. Assemble the GitHub review request as JSON in a temporary file. The request
    must have this shape:
 
    ```json
@@ -76,7 +78,7 @@ without sending a message. Do not attempt to infer missing fields.
    line in the same hunk that still supports the finding. Do not invent a line
    anchor or move a finding to unrelated code. Omit a finding that cannot be
    supported by a specific diff line.
-9. Validate the JSON locally with `jq empty`, re-check the PR head SHA one last
+10. Validate the JSON locally with `jq empty`, re-check the PR head SHA one last
    time, then submit it with:
 
    ```sh
@@ -99,10 +101,6 @@ reviewed head SHA (first 12 characters), whether the GitHub review was posted
 or already existed, the counts of blocking and advisory inline findings, and
 the GitHub review URL. Do not repeat the findings in Slack and do not attach a
 separate report.
-
-If the skill reports no findings, still post a `COMMENT` review with an empty
-`comments` array and a body saying no maintainability issues cleared the
-skill's reporting bar, then notify Slack with its URL.
 
 If the head moves, the event is unsupported, or the payload is invalid, do not
 post to GitHub or Slack. On tooling, authentication, clone, skill, JSON

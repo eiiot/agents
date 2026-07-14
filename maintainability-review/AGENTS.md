@@ -31,8 +31,9 @@ without sending a message. Do not attempt to infer missing fields.
    checkout.
 3. In the clone, verify with `gh pr view <number> --repo expo/tuft --json
    headRefOid,isDraft,state` that the PR is open, non-draft, and its current
-   `headRefOid` equals the payload head SHA. If it moved, end quietly; this
-   workflow reviews only the first eligible PR event.
+   `headRefOid` equals the payload head SHA. If it moved, clean up the recorded
+   temporary directory and end quietly; this workflow reviews only the first
+   eligible PR event.
 4. Read the target repository's `AGENTS.md`, `CLAUDE.md`, contributing docs,
    and design-document conventions before reviewing.
 5. Explicitly invoke the installed `maintainability-and-bloat-review` skill
@@ -40,8 +41,8 @@ without sending a message. Do not attempt to infer missing fields.
    `$maintainability-and-bloat-review <number>`; in Claude Code use
    `/maintainability-and-bloat-review <number>`. Follow that skill exactly and
    keep correctness, performance, and style-only review out of scope.
-6. Re-check the PR head SHA after the review. If it changed, discard the report
-   and end quietly.
+6. Re-check the PR head SHA after the review. If it changed, discard the report,
+   perform step 7 cleanup, and then end quietly.
 7. Remove the temporary clone and its parent directory with `rm -rf --
    <recorded-temp-directory>`. Cleanup is best-effort and must happen before
    every normal or error exit after the directory is created. Never remove a

@@ -41,13 +41,13 @@ without sending a message. Do not attempt to infer missing fields.
    keep correctness, performance, and style-only review out of scope.
 6. Re-check the PR head SHA after the review. If it changed, discard the report
    and end quietly.
-7. Before posting, list existing reviews with `gh api
+7. If the skill reports no findings, end the run quietly without posting to
+   GitHub or Slack.
+8. Before posting, list existing reviews with `gh api
    repos/expo/tuft/pulls/<number>/reviews --paginate`. If a review body already
    contains `<!-- tuft-maintainability-review:<full-head-sha> -->`, do not post
    a duplicate. Send the Slack status described below with the existing
    review's `html_url`.
-8. If the skill reports no findings, end the run quietly without posting to
-   GitHub or Slack.
 9. Assemble the GitHub review request as JSON in a temporary file. The request
    must have this shape:
 

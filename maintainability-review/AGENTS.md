@@ -41,25 +41,72 @@ without sending a message. Do not attempt to infer missing fields.
    keep correctness, performance, and style-only review out of scope.
 6. Re-check the PR head SHA after the review. If it changed, discard the report
    and end quietly.
+7. Before posting, list existing reviews with `gh api
+   repos/expo/tuft/pulls/<number>/reviews --paginate`. If a review body already
+   contains `<!-- tuft-maintainability-review:<full-head-sha> -->`, do not post
+   a duplicate. Send the Slack status described below with the existing
+   review's `html_url`.
+8. Assemble the GitHub review request as JSON in a temporary file. The request
+   must have this shape:
 
-Do not push commits, submit a GitHub review, edit labels, or comment on the PR.
-The only permitted side effect is the final `send_message` below.
+   ```json
+   {
+     "commit_id": "<full-head-sha>",
+     "event": "COMMENT",
+     "body": "<!-- tuft-maintainability-review:<full-head-sha> -->\nAutomated maintainability review for `<short-sha>`.\n\n<dominant-risk summary>",
+     "comments": [
+       {
+         "path": "path/from/repository/root.rs",
+         "line": 123,
+         "side": "RIGHT",
+         "body": "[blocking] Finding title\n\nMechanism and evidence..."
+       }
+     ]
+   }
+   ```
+
+   Use one entry in `comments` for every reported finding. Preserve the
+   skill's `[blocking]` or `[advisory]` classification at the start of each
+   inline comment. Resolve each finding's evidence against `gh pr diff
+   <number> --repo expo/tuft` and attach it to the most specific changed line
+   that demonstrates the issue. Use `side: "RIGHT"` for added/context lines in
+   the new file and `side: "LEFT"` only when the finding specifically concerns
+   a deleted line. GitHub accepts only lines in a diff hunk: if the initially
+   cited line is outside the diff, move the comment to the nearest changed
+   line in the same hunk that still supports the finding. Do not invent a line
+   anchor or move a finding to unrelated code. Omit a finding that cannot be
+   supported by a specific diff line.
+9. Validate the JSON locally with `jq empty`, re-check the PR head SHA one last
+   time, then submit it with:
+
+   ```sh
+   gh api --method POST repos/expo/tuft/pulls/<number>/reviews \
+     --input <review-json-file>
+   ```
+
+   The review event must always be `COMMENT`; never approve or request changes.
+   Capture the response's `html_url` for the Slack status.
+
+Do not push commits, edit labels, merge, approve, request changes, or post
+standalone issue/PR comments. The only permitted GitHub write is the single
+inline `COMMENT` review above.
 
 ## Output contract
 
-Send exactly one message when a review completes. Include:
+After the GitHub action, send exactly one short Slack message. Slack is only a
+delivery notification, not the review itself. Include `expo/tuft#<number>`, the
+reviewed head SHA (first 12 characters), whether the GitHub review was posted
+or already existed, the counts of blocking and advisory inline findings, and
+the GitHub review URL. Do not repeat the findings in Slack and do not attach a
+separate report.
 
-- `expo/tuft#<number>` and the reviewed head SHA (first 12 characters);
-- the skill's findings, preserving `blocking` and `advisory` classifications
-  and `file:line` evidence;
-- the skill's short dominant-risk summary; and
-- a direct link to the PR.
+If the skill reports no findings, still post a `COMMENT` review with an empty
+`comments` array and a body saying no maintainability issues cleared the
+skill's reporting bar, then notify Slack with its URL.
 
-If the report has no findings, say that the maintainability review found no
-issues that cleared the skill's reporting bar. Keep the message concise enough
-for Slack; if the report is long, write it to a Markdown file and use the
-available file-sharing tool, then send a short summary plus its link.
-
-On tooling, authentication, clone, or skill failures, send one actionable
-message naming the PR, failed step, and error. Never include credentials,
-webhook URLs, tokens, or the full request body.
+If the head moves, the event is unsupported, or the payload is invalid, do not
+post to GitHub or Slack. On tooling, authentication, clone, skill, JSON
+validation, or GitHub submission failures, do not fall back to putting the
+review in Slack; send one actionable Slack message naming the PR, failed step,
+and error. Never include credentials, webhook URLs, tokens, the review JSON,
+or the full request body.

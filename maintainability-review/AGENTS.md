@@ -47,13 +47,14 @@ without sending a message. Do not attempt to infer missing fields.
    <recorded-temp-directory>`. Cleanup is best-effort and must happen before
    every normal or error exit after the directory is created. Never remove a
    path that was not created and recorded by this run.
-8. If the skill reports no findings, end the run quietly without posting to
-   GitHub or Slack.
+8. If the skill reports no findings, continue with an empty `comments` array.
+   Use a review body stating that the maintainability review ran and no issues
+   cleared the skill's reporting bar.
 9. Before posting, list existing reviews with `gh api
    repos/expo/tuft/pulls/<number>/reviews --paginate`. If a review body already
    contains `<!-- tuft-maintainability-review:<full-head-sha> -->`, do not post
-   a duplicate. Send the Slack status described below with the existing
-   review's `html_url`.
+   a duplicate. Call `send_message` with the delivery status described below,
+   using the existing review's `html_url`.
 10. Assemble the GitHub review request as JSON in a temporary file. The request
    must have this shape:
 
@@ -75,12 +76,14 @@ without sending a message. Do not attempt to infer missing fields.
 
    Use one entry in `comments` for every reported finding. Preserve the
    skill's `[blocking]` or `[advisory]` classification at the start of each
-   inline comment. Resolve each finding's evidence against `gh pr diff
-   <number> --repo expo/tuft` and attach it to the most specific changed line
-   that demonstrates the issue. Use `side: "RIGHT"` for added/context lines in
-   the new file and `side: "LEFT"` only when the finding specifically concerns
-   a deleted line. GitHub accepts only lines in a diff hunk: if the initially
-   cited line is outside the diff, move the comment to the nearest changed
+   inline comment. When there are no findings, use `"comments": []` and the
+   clean-review body from step 8. Resolve each finding's evidence against
+   `gh pr diff <number> --repo expo/tuft` and attach it to the most specific
+   changed line that demonstrates the issue. Use `side: "RIGHT"` for
+   added/context lines in the new file and `side: "LEFT"` only when the finding
+   specifically concerns a deleted line. GitHub accepts only lines in a diff
+   hunk: if the initially cited line is outside the diff, move the comment to
+   the nearest changed
    line in the same hunk that still supports the finding. Do not invent a line
    anchor or move a finding to unrelated code. Omit a finding that cannot be
    supported by a specific diff line.
@@ -93,25 +96,27 @@ without sending a message. Do not attempt to infer missing fields.
    ```
 
    The review event must always be `COMMENT`; never approve or request changes.
-   Capture the response's `html_url` for the Slack status.
+   Capture the response's `html_url` for the delivery status.
 
 Do not push commits, edit labels, merge, approve, request changes, or post
 standalone issue/PR comments. The only permitted GitHub write is the single
-inline `COMMENT` review above.
+`COMMENT` review above.
 
 ## Output contract
 
-After the GitHub action, send exactly one short Slack message. Slack is only a
-delivery notification, not the review itself. Include `expo/tuft#<number>`, the
-reviewed head SHA (first 12 characters), whether the GitHub review was posted
-or already existed, the counts of blocking and advisory inline findings, and
-the GitHub review URL. Do not repeat the findings in Slack and do not attach a
-separate report.
+The GitHub review is the primary result. After it is posted or an existing
+review is found, call `send_message` exactly once with a short delivery status.
+Include `expo/tuft#<number>`, the reviewed head SHA (first 12 characters),
+whether the GitHub review was posted or already existed, the counts of blocking
+and advisory inline findings, and the GitHub review URL. Do not include the
+findings or attach a separate report. Tuft handles delivery to the webhook's
+configured targets. A clean review reports zero blocking and zero advisory
+findings and links to its GitHub acknowledgment.
 
 If the head moves, the event is unsupported, or the payload is invalid, do not
-post to GitHub or Slack. On tooling, authentication, clone, skill, JSON
-validation, or GitHub submission failures, do not fall back to putting the
-review in Slack; send one actionable Slack message naming the PR, failed step,
-and error. Attempt recorded temporary-directory cleanup before reporting any
-failure. Never include credentials, webhook URLs, tokens, the review JSON, or
-the full request body.
+post to GitHub or call `send_message`. On tooling, authentication, clone, skill,
+JSON validation, or GitHub submission failures, do not substitute a message for
+the GitHub review; call `send_message` once with the PR, failed step, and error.
+Attempt recorded temporary-directory cleanup before reporting any failure.
+Never include credentials, webhook URLs, tokens, the review JSON, or the full
+request body.

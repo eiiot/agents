@@ -2,8 +2,8 @@
 
 Runs the `maintainability-and-bloat-review` skill for relevant pull-request
 events from `expo/tuft`, posts one non-blocking GitHub review with findings on
-specific diff lines, and sends Slack a short delivery notification. Clean
-reviews stay silent on both GitHub and Slack.
+specific diff lines, and uses the webhook's `send_message` tool for a short
+delivery notification. Clean reviews produce neither a review nor a message.
 
 ## Tuft setup
 
@@ -14,8 +14,7 @@ reviews stay silent on both GitHub and Slack.
    - ref: `main`
    - subdirectory: `maintainability-review`
    - agent: Codex or Claude Code
-   - Slack channel: the channel where review delivery notifications should
-     appear
+   - Slack channel: an optional target for `send_message` delivery statuses
 3. Install the Tuft GitHub App with contents read access and pull-request write
    access to `expo/tuft` so `gh` can clone the repository, read pull requests,
    and submit inline `COMMENT` reviews.
@@ -40,6 +39,6 @@ deliveries do not produce review reports.
 Use GitHub's **Redeliver** action on a pull-request delivery to test the setup.
 The agent pins the review to the payload's head SHA and discards its report if
 the PR changes while the review is running. A run with findings leaves an
-inline GitHub review; Slack receives only its status and link. A run without
-findings produces no comment or notification. Each run removes its temporary
-`expo/tuft` clone before exiting.
+inline GitHub review and calls `send_message` with only its status and link. A
+run without findings produces no review or message. Each run removes its
+temporary `expo/tuft` clone before exiting.

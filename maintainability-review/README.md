@@ -2,7 +2,8 @@
 
 Runs the `maintainability-and-bloat-review` skill for relevant pull-request
 events from `expo/tuft`, posts one non-blocking GitHub review with findings on
-specific diff lines, and sends Slack a short delivery notification.
+specific diff lines, and sends Slack a short delivery notification. Clean
+reviews stay silent on both GitHub and Slack.
 
 ## Tuft setup
 
@@ -38,5 +39,7 @@ deliveries do not produce review reports.
 
 Use GitHub's **Redeliver** action on a pull-request delivery to test the setup.
 The agent pins the review to the payload's head SHA and discards its report if
-the PR changes while the review is running. A completed run leaves an inline
-GitHub review; Slack receives only its status and link.
+the PR changes while the review is running. A run with findings leaves an
+inline GitHub review; Slack receives only its status and link. A run without
+findings produces no comment or notification. Each run removes its temporary
+`expo/tuft` clone before exiting.

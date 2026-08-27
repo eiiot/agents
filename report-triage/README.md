@@ -18,22 +18,12 @@ use this repository and the `report-triage` subdirectory, then set the router's
 root-cause assessment without changing code. `pr` may create a fix PR when the
 evidence is strong and the fix is bounded.
 
-## Required Tuft capability
-
-The receiving agent must be able to materialize the bundle by opaque report ID:
-
-```sh
-tuft report download REPORT_ID --output REPORT.zip
-```
-
-That command/API does not exist yet. The webhook trigger can ship independently,
-but automatic debugging is not end-to-end until Tuft provides an account-scoped,
-audited download capability to webhook sessions. Do not put presigned R2 URLs in
-the webhook payload; they expire, leak storage authority into prompts, and make
-retries unreliable.
+The router includes a short-lived download grant scoped to the submitted report
+object. The receiver needs no Tuft account or machine-local credentials. Keep
+the URL out of output and logs, download immediately, and delete extracted
+diagnostics when the run finishes.
 
 ## Payload
 
 See `fixtures/report.uploaded.json`. The ingress policy rejects other event
 types and strips unknown fields before an agent run starts.
-

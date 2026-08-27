@@ -1,0 +1,2 @@
+version: 1
+filter: body.event == "report.uploaded"

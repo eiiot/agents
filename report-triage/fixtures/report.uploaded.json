@@ -1,0 +1,15 @@
+{
+  "event": "report.uploaded",
+  "report_id": "0198f18f-455c-72ce-a693-0f3fd38e6077",
+  "machine_id": "machine_01JABCDEF",
+  "session_id": "slack:1787862759.518369",
+  "description": "Tuft stopped replying after Metro restarted",
+  "size_bytes": 183420,
+  "included_files": 14,
+  "omitted_files": 3,
+  "report_download": {
+    "transfer_id": "0198f18f-455c-72ce-a693-0f3fd38e6077",
+    "download_url": "https://example.r2.cloudflarestorage.com/report?X-Amz-Signature=redacted",
+    "expires_at_ms": 1787866359000
+  }
+}
